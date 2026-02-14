@@ -1,18 +1,35 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+// Use Render backend URL
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://hrmslitebackend-4.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // 30 seconds for Render free tier
 });
+
+// Request interceptor
+api.interceptors.request.use(
+  (config) => {
+    console.log('API Request:', config.method.toUpperCase(), config.url);
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 // Response interceptor to handle the backend response format
 api.interceptors.response.use(
   (response) => {
-    console.log('API Response:', response.data); // Debug log
+    console.log('API Response:', response.status, response.data);
     
     // If response has the standard format { success, data, message }
     if (response.data && 'success' in response.data) {
@@ -50,16 +67,19 @@ api.interceptors.response.use(
             message: errorMessage,
             status: error.response.status
           }
-        }
+        },
+        message: errorMessage
       });
     } else if (error.request) {
       // Request made but no response
+      console.error('No response from server. Backend URL:', API_BASE_URL);
       return Promise.reject({
         response: {
           data: {
-            message: 'Cannot connect to server. Please check if backend is running.'
+            message: 'Cannot connect to server. Please check if backend is running at ' + API_BASE_URL
           }
-        }
+        },
+        message: 'Network Error'
       });
     } else {
       // Something else happened
@@ -68,7 +88,8 @@ api.interceptors.response.use(
           data: {
             message: error.message || 'An unexpected error occurred'
           }
-        }
+        },
+        message: error.message
       });
     }
   }
