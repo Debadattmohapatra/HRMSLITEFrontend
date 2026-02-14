@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, Edit, Trash2, Calendar, CheckCircle, XCircle } from 'lucide-react';
 import { attendanceAPI, employeeAPI } from '../api';
 import Modal from '../components/Model';
@@ -23,32 +23,7 @@ const Attendance = () => {
     status: 'present',
   });
 
-  useEffect(() => {
-    fetchInitialData();
-  }, []);
-
-  const fetchInitialData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Fetch employees first
-      console.log('Fetching employees...');
-      const employeesData = await employeeAPI.getAll();
-      console.log('Employees loaded:', employeesData);
-      setEmployees(Array.isArray(employeesData) ? employeesData : []);
-      
-      // Then fetch attendance
-      await fetchAttendance();
-    } catch (err) {
-      console.error('Failed to load initial data:', err);
-      setError('Failed to load data');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchAttendance = async () => {
+  const fetchAttendance = useCallback(async () => {
     try {
       const params = {};
       if (statusFilter !== 'all') params.status = statusFilter;
@@ -73,7 +48,32 @@ const Attendance = () => {
       console.error('Failed to fetch attendance:', err);
       setAttendance([]);
     }
-  };
+  }, [statusFilter, dateFilter, searchTerm]);
+
+  const fetchInitialData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Fetch employees first
+      console.log('Fetching employees...');
+      const employeesData = await employeeAPI.getAll();
+      console.log('Employees loaded:', employeesData);
+      setEmployees(Array.isArray(employeesData) ? employeesData : []);
+      
+      // Then fetch attendance
+      await fetchAttendance();
+    } catch (err) {
+      console.error('Failed to load initial data:', err);
+      setError('Failed to load data');
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchAttendance]);
+
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
   Plus, Search, Edit, Trash2, Calendar, CheckCircle, 
-  XCircle, Filter, RefreshCw, User, Clock, Download 
+  XCircle, Filter, RefreshCw, User, Clock 
 } from 'lucide-react';
 import { attendanceAPI, employeeAPI } from '../api';
 import Modal from '../components/Model';

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Mail, Building2, Calendar, CheckCircle, Clock } from 'lucide-react';
-import { employeeAPI, attendanceAPI } from '../api';
+import { employeeAPI } from '../api';
 import Loading from '../components/Loading';
 import ErrorMessage from '../components/ErrorMessage';
 
